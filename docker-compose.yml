@@ -10,19 +10,6 @@ services:
     volumes:
       - ./nginx/conf.d:/etc/nginx/conf.d
       - ./nginx/cert:/etc/nginx/cert
-  mysql:
-    container_name: mysql
-    image: mysql/mysql-server:8.0
-    environment:
-      MYSQL_DATABASE: homeware
-      MYSQL_ROOT_PASSWORD: password
-      MYSQL_ROOT_HOST: '%'
-    volumes:
-      - ./data:/var/lib/mysql
-      - ./mysql/conf.d:/etc/mysql/conf.d
-    ports:
-      - "3306:3306"
-    restart: always
   redis:
     container_name: redis
     image: redis:5
