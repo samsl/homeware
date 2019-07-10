@@ -15,11 +15,6 @@ services:
     image: redis:5
     ports:
       - "6379:6379"
-  mysql:
-    external:
-      host: rm-uf66rz48wf96c5w73.mysql.rds.aliyuncs.com
-      ports:
-        - 3306
   app:
     container_name: homeware
     restart: always
@@ -32,5 +27,4 @@ services:
       - "8080"
     depends_on:
       - nginx
-      - mysql
     command: mvn clean spring-boot:run -Dspring-boot.run.profiles=docker
