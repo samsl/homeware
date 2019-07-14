@@ -21,6 +21,7 @@ public class ExceptionController {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(Exception.class)
     public ResponseBean globalException(HttpServletRequest request, Throwable ex) {
+        ex.printStackTrace();
         return new ResponseBean(getStatus(request).value(), ex.getMessage());
     }
 
