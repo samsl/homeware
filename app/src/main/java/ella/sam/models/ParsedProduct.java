@@ -4,7 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.springframework.util.StringUtils;
-
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -113,6 +114,14 @@ public class ParsedProduct {
 
     private void parse() {
         try {
+            String pattern = ".*/(.*)html.*";
+            Pattern p = Pattern.compile(pattern);
+            Matcher m = p.matcher(url);
+            if (m.find()) {
+                url = "https://item.jd.com/" + m.group(1) + "html";
+            } else {
+                throw new RuntimeException("Parsed url failed");
+            }
             this.document = Jsoup.connect(url).get();
             this.imgUrl = "https:" + getValid("img#spec-img", "data-origin", "div#spec-n1>img", "src");
             this.name = document.select("ul.parameter2>li:contains(商品名称)").attr("title");
