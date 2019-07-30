@@ -51,7 +51,7 @@ public class ShiroConfig {
     }
 
     @Bean
-    public FilterRegistrationBean<Filter> disableJwtFilter() throws Exception {
+    public FilterRegistrationBean<Filter> disableJwtFilter(){
         FilterRegistrationBean<Filter> filterFilterRegistrationBean = new FilterRegistrationBean<>();
         filterFilterRegistrationBean.setFilter(jwtFilter);
         filterFilterRegistrationBean.setEnabled(false);
@@ -69,13 +69,15 @@ public class ShiroConfig {
     public ShiroFilterChainDefinition shiroFilterChainDefinition() {
         DefaultShiroFilterChainDefinition chain = new DefaultShiroFilterChainDefinition();
         chain.addPathDefinition("/login", "noSessionCreation,anon");
+        chain.addPathDefinition("/register", "noSessionCreation,anon");
+        chain.addPathDefinition("/users/isExisting", "noSessionCreation,anon");
         chain.addPathDefinition("/**", "noSessionCreation,jwt");
         return chain;
     }
 
 
     @Bean
-    JwtCredentialsMatcher jwtCredentialsMatcher() {
+    private JwtCredentialsMatcher jwtCredentialsMatcher() {
         JwtCredentialsMatcher jwtCredentialsMatcher = new JwtCredentialsMatcher();
         return jwtCredentialsMatcher;
     }

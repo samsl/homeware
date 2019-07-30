@@ -4,6 +4,7 @@ import ella.sam.models.Constant;
 import ella.sam.models.LoginForm;
 import ella.sam.models.ResponseBean;
 import ella.sam.models.User;
+import ella.sam.services.UserService;
 import ella.sam.shiro.jwt.JwtUtil;
 import ella.sam.shiro.redis.RedisClient;
 import org.apache.shiro.SecurityUtils;
@@ -27,6 +28,9 @@ public class LoginController {
     @Autowired
     private RedisClient redisClient;
 
+    @Autowired
+    private UserService userService;
+
     @Value("${refreshTokenExpireTime}")
     private String refreshTokenExpireTime;
 
@@ -37,7 +41,7 @@ public class LoginController {
         try {
             subject.login(token);
             User user = (User) subject.getPrincipal();
-            Long currentTimeMillis =  System.currentTimeMillis();
+            long currentTimeMillis =  System.currentTimeMillis();
 
             String jwtToken = JwtUtil.sign(user.getUsername(), user.getSalt(), currentTimeMillis);
             redisClient.set(Constant.PREFIX_SHIRO_REFRESH_TOKEN + user.getUsername(), currentTimeMillis, Long.valueOf(refreshTokenExpireTime));
@@ -45,8 +49,13 @@ public class LoginController {
 
             return new ResponseBean(HttpStatus.OK.value(), "Login Success.");
         } catch(IncorrectCredentialsException | UnknownAccountException e) {
-           throw e;
+           throw new RuntimeException("Login failed", e);
         }
+    }
+
+    @PostMapping("/register")
+    public ResponseBean createUser(@RequestBody User user) {
+        return new ResponseBean(HttpStatus.CREATED.value(),"Success", userService.createUser(user));
     }
 
 }
