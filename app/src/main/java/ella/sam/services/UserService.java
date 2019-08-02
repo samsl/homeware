@@ -9,6 +9,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Random;
 
@@ -38,6 +39,10 @@ public class UserService {
         return repository.save(user);
     }
 
+    public User findByOpenid(String openid) {
+        return repository.findByOpenid(openid);
+    }
+
     private String generateSalt() {
         String CHARS = "abcdefghijklmnopqrstuvwxyz";
         StringBuilder sb = new StringBuilder();
@@ -50,6 +55,9 @@ public class UserService {
     }
 
     private String hashPassword(String password, String salt) {
+        if (password == null) {
+            return "";
+        }
         byte[] saltBytes = salt.getBytes(StandardCharsets.UTF_8);
         MessageDigest md;
         try {

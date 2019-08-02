@@ -16,8 +16,7 @@ import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.springframework.beans.factory.annotation.Autowired;
 
-
-public class JwtRealm extends AuthorizingRealm {
+public class WxJwtRealm extends AuthorizingRealm {
     @Autowired
     private UserService userService;
 
@@ -42,21 +41,15 @@ public class JwtRealm extends AuthorizingRealm {
     @Override
     protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken authenticationToken) throws AuthenticationException {
         JwtToken token = (JwtToken) authenticationToken;
-        String username = JwtUtil.getUsername((String) token.getCredentials());
-
+        String openid = JwtUtil.getOpenid((String) token.getCredentials());
         User user;
         SimpleAuthenticationInfo authenticationInfo;
-
-
-        user = userService.findUserByUsername(username);
-
-
+        user = userService.findByOpenid(openid);
         if (user == null) {
             throw new AuthenticationException("token is out of date, please login again.");
         }
-        authenticationInfo = new SimpleAuthenticationInfo(username, user.getSalt(), getName());
+        authenticationInfo = new SimpleAuthenticationInfo(openid, user.getSalt(), getName());
 
         return authenticationInfo;
     }
-
 }

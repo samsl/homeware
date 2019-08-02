@@ -7,6 +7,7 @@ import ella.sam.models.User;
 import ella.sam.services.UserService;
 import ella.sam.shiro.jwt.JwtUtil;
 import ella.sam.shiro.redis.RedisClient;
+import ella.sam.wechat.WechatUtils;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.IncorrectCredentialsException;
 import org.apache.shiro.authc.UnknownAccountException;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.Map;
 
 
 @RestController
@@ -51,6 +53,25 @@ public class LoginController {
         } catch(IncorrectCredentialsException | UnknownAccountException e) {
            throw new RuntimeException("Login failed", e);
         }
+    }
+
+    @PostMapping("/wxLogin")
+    public ResponseBean login(@RequestBody Map<String, String> wxLogin, HttpServletResponse response) {
+        String openid = WechatUtils.getOpenid(wxLogin.get("loginCode"));
+        if (openid.isEmpty()) {
+            throw new RuntimeException("Cannot get openid");
+        }
+        User user = userService.findByOpenid(openid);
+        if (user == null) {
+            user = new User();
+            user.setOpenid(openid);
+            user = userService.createUser(user);
+        }
+        long currentTimeMillis =  System.currentTimeMillis();
+        String wxToken = JwtUtil.signForWx(openid, user.getSalt(), currentTimeMillis);
+        redisClient.set(Constant.PREFIX_SHIRO_REFRESH_TOKEN + user.getOpenid(), currentTimeMillis, Long.valueOf(refreshTokenExpireTime));
+        response.setHeader("x-auth-token", wxToken);
+        return new ResponseBean(HttpStatus.CREATED.value(), "Success");
     }
 
     @PostMapping("/register")

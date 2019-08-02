@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import ella.sam.models.Constant;
 import ella.sam.models.ResponseBean;
+import ella.sam.models.User;
 import ella.sam.services.UserService;
 import ella.sam.shiro.jwt.JwtToken;
 import ella.sam.shiro.jwt.JwtUtil;
@@ -13,7 +14,6 @@ import org.apache.shiro.ShiroException;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.web.filter.authc.AuthenticatingFilter;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +30,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 
 @Component
-public class JWTFilter extends AuthenticatingFilter {
+public class WxJWTFilter extends AuthenticatingFilter {
 
     private static final Logger LOG = LoggerFactory.getLogger(JWTFilter.class);
 
@@ -104,14 +104,20 @@ public class JWTFilter extends AuthenticatingFilter {
 
     protected boolean refreshToken(ServletRequest request, ServletResponse response) {
         String token = getAuthorizationHeader(request);
-        String username = JwtUtil.getUsername(token);
-        if (redisClient.hasKey(Constant.PREFIX_SHIRO_REFRESH_TOKEN + username)) {
-            String currentTimeMillisRedis = redisClient.get(Constant.PREFIX_SHIRO_REFRESH_TOKEN + username).toString();
+        String openid = JwtUtil.getOpenid(token);
+
+        User user = userService.findByOpenid(openid);
+
+        String secret = user.getSalt();
+
+        if (redisClient.hasKey(Constant.PREFIX_SHIRO_REFRESH_TOKEN + openid)) {
+            String currentTimeMillisRedis = redisClient.get(Constant.PREFIX_SHIRO_REFRESH_TOKEN + openid).toString();
             if (JwtUtil.getSignTime(token).equals(currentTimeMillisRedis)) {
                 long currentMillis = System.currentTimeMillis();
-                redisClient.set(Constant.PREFIX_SHIRO_REFRESH_TOKEN + username, currentMillis, Long.valueOf(refreshTokenExpireTime));
-                String secret = userService.findUserByUsername(username).getSalt();
-                token = JwtUtil.sign(username, secret, currentMillis);
+                redisClient.set(Constant.PREFIX_SHIRO_REFRESH_TOKEN + openid, currentMillis, Long.valueOf(refreshTokenExpireTime));
+
+                token = JwtUtil.signForWx(openid, secret, currentMillis);
+
                 JwtToken jwtToken = new JwtToken(token);
                 //check subject to get user
                 this.getSubject(request, response).login(jwtToken);

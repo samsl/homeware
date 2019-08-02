@@ -38,6 +38,9 @@ public class JwtUtil {
         }
     }
 
+    public static String getOpenid(String token) {
+        return getClaim(token, "openid");
+    }
     public static String getUsername(String token) {
        return getClaim(token, "username");
     }
@@ -46,12 +49,27 @@ public class JwtUtil {
         return getClaim(token, "signTime");
     }
 
+    public static String signWx(String openid, String secret, long currentTimeMillis) {
+        Date currentTime = new Date(currentTimeMillis);
+        Date date = new Date(currentTime.getTime() + ACCESS_TOKEN_EXPIRE_TIME * 1000);
+        Algorithm algorithm = Algorithm.HMAC256(secret);
+        return JWT.create().withClaim("openid", openid).withClaim("signTime", String.valueOf(currentTimeMillis)).withExpiresAt(date).sign(algorithm);
+
+    }
+
     public static String sign(String username, String secret, long currentTimeMillis) {
         Date currentTime = new Date(currentTimeMillis);
         Date date = new Date(currentTime.getTime() + ACCESS_TOKEN_EXPIRE_TIME * 1000);
         Algorithm algorithm = Algorithm.HMAC256(secret);
         return JWT.create().withClaim("username", username).withClaim("signTime", String.valueOf(currentTimeMillis)).withExpiresAt(date).sign(algorithm);
 
+    }
+
+    public static String signForWx(String openid, String secret, long currentTimeMillis) {
+        Date currentTime = new Date(currentTimeMillis);
+        Date date = new Date(currentTime.getTime() + ACCESS_TOKEN_EXPIRE_TIME * 1000);
+        Algorithm algorithm = Algorithm.HMAC256(secret);
+        return JWT.create().withClaim("openid", openid).withClaim("signTime", String.valueOf(currentTimeMillis)).withExpiresAt(date).sign(algorithm);
     }
 
     public static boolean isTokenExpired(String token) {

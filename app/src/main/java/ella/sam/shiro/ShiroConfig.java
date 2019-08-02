@@ -2,6 +2,7 @@ package ella.sam.shiro;
 
 
 import ella.sam.shiro.jwt.JwtCredentialsMatcher;
+import ella.sam.shiro.jwt.WxJwtCredentialsMatcher;
 import ella.sam.shiro.redis.RedisClient;
 import org.apache.shiro.authc.Authenticator;
 import org.apache.shiro.authc.credential.HashedCredentialsMatcher;
@@ -37,6 +38,9 @@ public class ShiroConfig {
     private JWTFilter jwtFilter;
 
     @Autowired
+    private WxJWTFilter wxJWTFilter;
+
+    @Autowired
     private RedisClient redisClient;
 
     @Bean
@@ -57,10 +61,18 @@ public class ShiroConfig {
         filterFilterRegistrationBean.setEnabled(false);
         return filterFilterRegistrationBean;
     }
+
+    @Bean
+    public FilterRegistrationBean<Filter> disableWxJwtFilter(){
+        FilterRegistrationBean<Filter> filterFilterRegistrationBean = new FilterRegistrationBean<>();
+        filterFilterRegistrationBean.setFilter(wxJWTFilter);
+        filterFilterRegistrationBean.setEnabled(false);
+        return filterFilterRegistrationBean;
+    }
     @Bean
     public Authenticator authenticator() {
         ModularRealmAuthenticator authenticator = new ModularRealmAuthenticator();
-        authenticator.setRealms(Arrays.asList(jwtRealm(), passwordRealm()));
+        authenticator.setRealms(Arrays.asList(jwtRealm(), passwordRealm(), wxJwtRealm()));
         authenticator.setAuthenticationStrategy(new FirstSuccessfulStrategy());
         return authenticator;
     }
@@ -69,6 +81,7 @@ public class ShiroConfig {
     public ShiroFilterChainDefinition shiroFilterChainDefinition() {
         DefaultShiroFilterChainDefinition chain = new DefaultShiroFilterChainDefinition();
         chain.addPathDefinition("/login", "noSessionCreation,anon");
+        chain.addPathDefinition("/wxLogin", "noSessionCreation,anon");
         chain.addPathDefinition("/register", "noSessionCreation,anon");
         chain.addPathDefinition("/users/isExisting", "noSessionCreation,anon");
         chain.addPathDefinition("/**", "noSessionCreation,jwt");
@@ -77,9 +90,15 @@ public class ShiroConfig {
 
 
     @Bean
-    private JwtCredentialsMatcher jwtCredentialsMatcher() {
+    public JwtCredentialsMatcher jwtCredentialsMatcher() {
         JwtCredentialsMatcher jwtCredentialsMatcher = new JwtCredentialsMatcher();
         return jwtCredentialsMatcher;
+    }
+
+    @Bean
+    public WxJwtCredentialsMatcher wxJwtCredentialsMatcher() {
+        WxJwtCredentialsMatcher wxJwtCredentialsMatcher = new WxJwtCredentialsMatcher();
+        return wxJwtCredentialsMatcher;
     }
 
     @Bean
@@ -107,6 +126,14 @@ public class ShiroConfig {
         return jwtRealm;
     }
 
+    @Bean WxJwtRealm wxJwtRealm() {
+        WxJwtRealm wxJwtRealm = new WxJwtRealm();
+        wxJwtRealm.setAuthenticationCachingEnabled(true);
+        wxJwtRealm.setCacheManager(new ShiroCacheManager(redisClient));
+        wxJwtRealm.setCredentialsMatcher(wxJwtCredentialsMatcher());
+        return wxJwtRealm;
+    }
+
     @Bean
     public AuthorizationAttributeSourceAdvisor authorizationAttributeSourceAdvisor(SecurityManager securityManager) {
         AuthorizationAttributeSourceAdvisor advisor = new AuthorizationAttributeSourceAdvisor();
@@ -132,6 +159,7 @@ public class ShiroConfig {
         ShiroFilterFactoryBean factoryBean = new ShiroFilterFactoryBean();
         Map<String, Filter> filterMap = factoryBean.getFilters();
         filterMap.put("jwt", jwtFilter);
+        filterMap.put("wxjwt", wxJWTFilter);
         factoryBean.setFilters(filterMap);
 
         factoryBean.setSecurityManager(securityManager);
