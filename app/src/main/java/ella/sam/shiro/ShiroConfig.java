@@ -38,9 +38,6 @@ public class ShiroConfig {
     private JWTFilter jwtFilter;
 
     @Autowired
-    private WxJWTFilter wxJWTFilter;
-
-    @Autowired
     private RedisClient redisClient;
 
     @Bean
@@ -62,13 +59,7 @@ public class ShiroConfig {
         return filterFilterRegistrationBean;
     }
 
-    @Bean
-    public FilterRegistrationBean<Filter> disableWxJwtFilter(){
-        FilterRegistrationBean<Filter> filterFilterRegistrationBean = new FilterRegistrationBean<>();
-        filterFilterRegistrationBean.setFilter(wxJWTFilter);
-        filterFilterRegistrationBean.setEnabled(false);
-        return filterFilterRegistrationBean;
-    }
+
     @Bean
     public Authenticator authenticator() {
         ModularRealmAuthenticator authenticator = new ModularRealmAuthenticator();
@@ -84,6 +75,7 @@ public class ShiroConfig {
         chain.addPathDefinition("/wxLogin", "noSessionCreation,anon");
         chain.addPathDefinition("/register", "noSessionCreation,anon");
         chain.addPathDefinition("/users/isExisting", "noSessionCreation,anon");
+        chain.addPathDefinition("/movies/**", "noSessionCreation,anon");
         chain.addPathDefinition("/**", "noSessionCreation,jwt");
         return chain;
     }
@@ -91,14 +83,14 @@ public class ShiroConfig {
 
     @Bean
     public JwtCredentialsMatcher jwtCredentialsMatcher() {
-        JwtCredentialsMatcher jwtCredentialsMatcher = new JwtCredentialsMatcher();
-        return jwtCredentialsMatcher;
+       return new JwtCredentialsMatcher();
+
     }
 
     @Bean
     public WxJwtCredentialsMatcher wxJwtCredentialsMatcher() {
-        WxJwtCredentialsMatcher wxJwtCredentialsMatcher = new WxJwtCredentialsMatcher();
-        return wxJwtCredentialsMatcher;
+        return new WxJwtCredentialsMatcher();
+
     }
 
     @Bean
@@ -159,7 +151,6 @@ public class ShiroConfig {
         ShiroFilterFactoryBean factoryBean = new ShiroFilterFactoryBean();
         Map<String, Filter> filterMap = factoryBean.getFilters();
         filterMap.put("jwt", jwtFilter);
-        filterMap.put("wxjwt", wxJWTFilter);
         factoryBean.setFilters(filterMap);
 
         factoryBean.setSecurityManager(securityManager);

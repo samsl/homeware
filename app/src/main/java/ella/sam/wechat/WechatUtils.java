@@ -9,7 +9,7 @@ import java.io.IOException;
 import java.util.Map;
 
 public class WechatUtils {
-    private static final String SECRET = "27514fa3535c86d4597d0a6bb3101936";
+    private static final String SECRET = "3e5859ffed34c1e431d3b92fbb13f109";
     private static final String APP_ID = "wx468049a7e394ce4e";
     private static final String WX_URL = "https://api.weixin.qq.com/sns/jscode2session?appid=%s&secret=%s&js_code=%s&grant_type=authorization_code";
 

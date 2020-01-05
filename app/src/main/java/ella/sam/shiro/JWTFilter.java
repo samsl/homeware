@@ -36,13 +36,13 @@ public class JWTFilter extends AuthenticatingFilter {
 
 
     @Value("${refreshTokenExpireTime}")
-    protected String refreshTokenExpireTime;
+    private String refreshTokenExpireTime;
 
     @Autowired
-    protected RedisClient redisClient;
+    private RedisClient redisClient;
 
     @Autowired
-    protected UserService userService;
+    private UserService userService;
 
     @Override
     protected boolean isAccessAllowed(ServletRequest request, ServletResponse response, Object mappedValue) {
@@ -84,7 +84,7 @@ public class JWTFilter extends AuthenticatingFilter {
     }
 
     @Override
-    protected AuthenticationToken createToken(ServletRequest servletRequest, ServletResponse servletResponse) throws Exception {
+    protected AuthenticationToken createToken(ServletRequest servletRequest, ServletResponse servletResponse) {
         String jwtToken = getAuthorizationHeader(servletRequest);
         if (jwtToken != null && !jwtToken.isEmpty()) {
             if (!JwtUtil.isTokenExpired(jwtToken)) {
@@ -96,23 +96,31 @@ public class JWTFilter extends AuthenticatingFilter {
         return null;
     }
 
-    protected String getAuthorizationHeader(ServletRequest request) {
+    private String getAuthorizationHeader(ServletRequest request) {
         HttpServletRequest httpRequest = (HttpServletRequest) request;
-        String header = httpRequest.getHeader("x-auth-token");
-        return header;
+        return httpRequest.getHeader("x-auth-token");
     }
 
-    protected boolean refreshToken(ServletRequest request, ServletResponse response) {
+    private boolean refreshToken(ServletRequest request, ServletResponse response) {
         String token = getAuthorizationHeader(request);
-        String username = JwtUtil.getUsername(token);
-        if (redisClient.hasKey(Constant.PREFIX_SHIRO_REFRESH_TOKEN + username)) {
-            String currentTimeMillisRedis = redisClient.get(Constant.PREFIX_SHIRO_REFRESH_TOKEN + username).toString();
+        String tokenInfo = JwtUtil.getUsername(token);
+        String secret;
+        String newToken;
+        long currentMillis = System.currentTimeMillis();
+        if (tokenInfo == null) {
+            tokenInfo = JwtUtil.getOpenid(token);
+            secret = userService.findByOpenid(tokenInfo).getSalt();
+            newToken = JwtUtil.signForWx(tokenInfo, secret, currentMillis);
+        } else {
+            secret = userService.findUserByUsername(tokenInfo).getSalt();
+            newToken = JwtUtil.sign(tokenInfo, secret, currentMillis);
+        }
+        if (redisClient.hasKey(Constant.PREFIX_SHIRO_REFRESH_TOKEN + tokenInfo)) {
+            String currentTimeMillisRedis = redisClient.get(Constant.PREFIX_SHIRO_REFRESH_TOKEN + tokenInfo).toString();
             if (JwtUtil.getSignTime(token).equals(currentTimeMillisRedis)) {
-                long currentMillis = System.currentTimeMillis();
-                redisClient.set(Constant.PREFIX_SHIRO_REFRESH_TOKEN + username, currentMillis, Long.valueOf(refreshTokenExpireTime));
-                String secret = userService.findUserByUsername(username).getSalt();
-                token = JwtUtil.sign(username, secret, currentMillis);
-                JwtToken jwtToken = new JwtToken(token);
+                redisClient.set(Constant.PREFIX_SHIRO_REFRESH_TOKEN + tokenInfo, currentMillis, Long.valueOf(refreshTokenExpireTime));
+
+                JwtToken jwtToken = new JwtToken(newToken);
                 //check subject to get user
                 this.getSubject(request, response).login(jwtToken);
                 HttpServletResponse httpServletResponse = (HttpServletResponse) response;
@@ -123,14 +131,14 @@ public class JWTFilter extends AuthenticatingFilter {
         return false;
     }
 
-    protected void fillCorsHeader(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) {
+    private void fillCorsHeader(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) {
         httpServletResponse.setHeader("Access-Control-Allow-Origin", httpServletRequest.getHeader("Origin"));
         httpServletResponse.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS,PUT,DELETE");
         httpServletResponse.setHeader("Access-Control-Allow-Headers", httpServletRequest.getHeader("Access-Control-Access-Headers"));
     }
 
     @Override
-    protected boolean onAccessDenied(ServletRequest servletRequest, ServletResponse servletResponse) throws Exception {
+    protected boolean onAccessDenied(ServletRequest servletRequest, ServletResponse servletResponse) {
         HttpServletResponse httpResposne = (HttpServletResponse) servletResponse;
         httpResposne.setCharacterEncoding("UTF-8");
         httpResposne.setContentType("application/json;charset=UTF-8");
@@ -159,10 +167,4 @@ public class JWTFilter extends AuthenticatingFilter {
         }
     }
 
-    @Override
-    protected boolean onLoginSuccess(AuthenticationToken token, Subject subject, ServletRequest request, ServletResponse response) {
-        HttpServletResponse httpServletResponse = (HttpServletResponse) response;
-
-        return true;
-    }
 }

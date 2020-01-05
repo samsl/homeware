@@ -47,12 +47,13 @@ public class JwtRealm extends AuthorizingRealm {
         User user;
         SimpleAuthenticationInfo authenticationInfo;
 
-
+        if (username == null) {
+            throw new AuthenticationException("Can't parse username from token, it should be wx token");
+        }
         user = userService.findUserByUsername(username);
 
-
         if (user == null) {
-            throw new AuthenticationException("token is out of date, please login again.");
+            throw new AuthenticationException(String.format("Can't get user whose name is %s", username));
         }
         authenticationInfo = new SimpleAuthenticationInfo(username, user.getSalt(), getName());
 

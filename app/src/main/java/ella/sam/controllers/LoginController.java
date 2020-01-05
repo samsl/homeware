@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
@@ -56,7 +57,7 @@ public class LoginController {
     }
 
     @PostMapping("/wxLogin")
-    public ResponseBean login(@RequestBody Map<String, String> wxLogin, HttpServletResponse response) {
+    public ResponseBean login(@RequestBody Map<String, String> wxLogin, @RequestHeader Map<String, String> headers, HttpServletResponse response) {
         String openid = WechatUtils.getOpenid(wxLogin.get("loginCode"));
         if (openid.isEmpty()) {
             throw new RuntimeException("Cannot get openid");
