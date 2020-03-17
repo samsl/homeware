@@ -13,3 +13,8 @@ spring:
     host: 127.0.0.1
     port: 6379
 refreshTokenExpireTime: 86400
+elasticsearch:
+  host: 192.168.50.107
+  port: 32781
+  index_name: mylife
+  doc_type: movie

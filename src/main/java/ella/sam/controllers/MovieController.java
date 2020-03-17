@@ -7,6 +7,7 @@ import ella.sam.models.Movie;
 import ella.sam.models.MovieDTO;
 import ella.sam.models.Region;
 import ella.sam.models.ResponseBean;
+import ella.sam.query.MovieQuerier;
 import ella.sam.services.CelebrityService;
 import ella.sam.services.GenreService;
 import ella.sam.services.MovieService;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.HashMap;
@@ -38,6 +40,8 @@ public class MovieController {
     private CelebrityService celebrityService;
     @Autowired
     private RegionService regionService;
+    @Autowired
+    private MovieQuerier movieQuerier;
 
     @DeleteMapping("/{id}")
     public ResponseBean deleteById(@PathVariable Long id) {
@@ -46,8 +50,8 @@ public class MovieController {
     }
 
     @GetMapping
-    public ResponseBean list() {
-        return new ResponseBean(200, "Success", movieService.getMovieList());
+    public ResponseBean list(@RequestParam(value = "from") int from, @RequestParam(value = "size") int size) {
+        return new ResponseBean(200, "Success", movieQuerier.browseMovie(size, from));
     }
 
     @PostMapping

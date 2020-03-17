@@ -18,10 +18,10 @@ services:
   app:
     container_name: homeware
     restart: always
-    build: ./app
+    build: .
     working_dir: /app
     volumes:
-      - ./app:/app
+      - .:/app
       - ~/.m2:/root/.m2
     expose:
       - "8080"
