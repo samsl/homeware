@@ -5,6 +5,7 @@ import ella.sam.models.Celebrity;
 import ella.sam.models.Genre;
 import ella.sam.models.Movie;
 import ella.sam.models.MovieDTO;
+import ella.sam.models.QueryBody;
 import ella.sam.models.Region;
 import ella.sam.models.ResponseBean;
 import ella.sam.query.MovieQuerier;
@@ -50,17 +51,20 @@ public class MovieController {
     }
 
     @GetMapping
-    public ResponseBean list(@RequestParam(value = "from") int from, @RequestParam(value = "size") int size) {
-        return new ResponseBean(200, "Success", movieQuerier.browseMovie(size, from));
+    public ResponseBean list(@RequestParam(value = "from", required = false) Integer from, @RequestParam(value = "size", required = false) Integer size, @RequestBody QueryBody queryBody) {
+        if (queryBody.getAggregation() != null) {
+            return new ResponseBean(200, "Success",movieQuerier.getFieldSet(from, size, queryBody));
+        }
+        return new ResponseBean(200, "Success", movieQuerier.browseMovie(from, size, queryBody));
     }
 
     @PostMapping
     public ResponseBean create(@RequestBody MovieDTO movieDTO) {
 
         Map<String, Celebrity> celebrityMap = new HashMap<>();
-        Set<String> directorNames = movieDTO.getDirectors();
+        Set<String> directorNames = movieDTO.getDirector();
         Set<Celebrity> directors = new HashSet<>();
-        directorNames.forEach(d->{
+        directorNames.forEach(d -> {
             Celebrity celebrity = celebrityService.findCelebrityByName(d);
             if (celebrity == null) {
                 if (celebrityMap.containsKey(d)) {
@@ -73,9 +77,9 @@ public class MovieController {
             directors.add(celebrity);
         });
 
-        Set<String> playwrightNames = movieDTO.getPlaywrights();
+        Set<String> playwrightNames = movieDTO.getPlaywright();
         Set<Celebrity> playwrights = new HashSet<>();
-        playwrightNames.forEach(d->{
+        playwrightNames.forEach(d -> {
             Celebrity celebrity = celebrityService.findCelebrityByName(d);
             if (celebrity == null) {
                 if (celebrityMap.containsKey(d)) {
@@ -90,7 +94,7 @@ public class MovieController {
 
         Set<String> castNames = movieDTO.getCast();
         Set<Celebrity> cast = new HashSet<>();
-        castNames.forEach(d->{
+        castNames.forEach(d -> {
             Celebrity celebrity = celebrityService.findCelebrityByName(d);
             if (celebrity == null) {
                 if (celebrityMap.containsKey(d)) {
@@ -106,16 +110,16 @@ public class MovieController {
         Set<String> genreNames = movieDTO.getGenres();
         Set<Genre> genres = new HashSet<>();
         genreNames.forEach(g -> {
-                    Genre genre = genreService.findByName(g);
-                    if (genre == null) {
-                        genre = new Genre(g);
-                    }
-                    genres.add(genre);
-                });
+            Genre genre = genreService.findByName(g);
+            if (genre == null) {
+                genre = new Genre(g);
+            }
+            genres.add(genre);
+        });
 
         Set<String> regionNames = movieDTO.getRegions();
         Set<Region> regions = new HashSet<>();
-        regionNames.forEach(d->{
+        regionNames.forEach(d -> {
             Region region = regionService.findByName(d);
             if (region == null) {
                 region = new Region(d);

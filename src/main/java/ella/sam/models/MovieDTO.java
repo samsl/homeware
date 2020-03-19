@@ -1,16 +1,20 @@
 package ella.sam.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import java.util.Set;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class MovieDTO {
     private String name;
-    private Set<String> directors;
-    private Set<String> playwrights;
+    private Set<String> director;
+    private Set<String> playwright;
     private Set<String> regions;
     private Set<String> genres;
     private Set<String> cast;
     private short year;
     private String post;
+    private double rating;
 
     public String getName() {
         return name;
@@ -20,20 +24,20 @@ public class MovieDTO {
         this.name = name;
     }
 
-    public Set<String> getDirectors() {
-        return directors;
+    public Set<String> getDirector() {
+        return director;
     }
 
-    public void setDirectors(Set<String> directors) {
-        this.directors = directors;
+    public void setDirector(Set<String> director) {
+        this.director = director;
     }
 
-    public Set<String> getPlaywrights() {
-        return playwrights;
+    public Set<String> getPlaywright() {
+        return playwright;
     }
 
-    public void setPlaywrights(Set<String> playwrights) {
-        this.playwrights = playwrights;
+    public void setPlaywright(Set<String> playwright) {
+        this.playwright = playwright;
     }
 
     public Set<String> getRegions() {
@@ -74,5 +78,13 @@ public class MovieDTO {
 
     public void setPost(String post) {
         this.post = post;
+    }
+
+    public double getRating() {
+        return rating;
+    }
+
+    public void setRating(double rating) {
+        this.rating = rating;
     }
 }

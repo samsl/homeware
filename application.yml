@@ -18,3 +18,5 @@ elasticsearch:
   port: 32781
   index_name: mylife
   doc_type: movie
+  mapping: "{ \"properties\": { \"genres\": { \"type\": \"keyword\" }, \"regions\": { \"type\": \"keyword\" }, \"director\": { \"type\": \"text\",   \"fields\": { \"keyword\": { \"type\":  \"keyword\" } } }, \"playwright\":{ \"type\": \"text\",  \"fields\": { \"keyword\": { \"type\":  \"keyword\" } } }, \"cast\": { \"type\": \"text\",   \"fields\": { \"keyword\": { \"type\":  \"keyword\" } } }, \"post\": { \"type\": \"text\", \"index\": false }, \"douban_link\": { \"type\": \"text\", \"index\": false }, \"rating\": { \"type\": \"float\"}, \"name\": { \"type\": \"text\",   \"fields\": { \"keyword\": { \"type\":  \"keyword\" } } }, \"year\": { \"type\": \"short\"} } }"
+

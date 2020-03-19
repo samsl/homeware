@@ -1,5 +1,6 @@
 package ella.sam.models;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.HttpHost;
 import org.elasticsearch.client.Request;
 import org.elasticsearch.client.Response;
@@ -19,6 +20,8 @@ public class QueryClient {
     private String host;
     @Value("${elasticsearch.port}")
     private int port;
+    @Value("${elasticsearch.mapping}")
+    private String mapping;
 
     private RestClient queryClient;
 
@@ -36,6 +39,15 @@ public class QueryClient {
             return queryClient.performRequest(request);
         } catch (IOException e) {
             throw new RuntimeException("Can't send request", e);
+        }
+    }
+
+    public Map<String, Object> getMapping() {
+        ObjectMapper objectMapper = new ObjectMapper();
+        try {
+            return objectMapper.readValue(mapping, Map.class);
+        } catch (IOException e) {
+            throw new RuntimeException("Can't read mapping correctly " + mapping);
         }
     }
 
