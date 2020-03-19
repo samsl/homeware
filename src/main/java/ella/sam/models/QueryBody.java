@@ -13,6 +13,7 @@ public class QueryBody {
     private MultiMatch multiMatch;
     private List<Query> filter;
     private Aggregation aggregation;
+    private Sort sort;
 
     public MultiMatch getMultiMatch() {
         return multiMatch;
@@ -38,6 +39,14 @@ public class QueryBody {
         this.aggregation = aggregation;
     }
 
+    public Sort getSort() {
+        return sort;
+    }
+
+    public void setSort(Sort sort) {
+        this.sort = sort;
+    }
+
     public String jsonString() {
         Map<String, Object> jsonMap = new HashMap<>();
 
@@ -61,6 +70,10 @@ public class QueryBody {
             }
             Map<String, Object> aggregationMap = aggregation.jsonMap();
             jsonMap.put("aggs", aggregationMap);
+        }
+        if (sort != null) {
+            Map<String, String> sortMap = sort.jsonMap();
+            jsonMap.put("sort", sortMap);
         }
         ObjectMapper objectMapper = new ObjectMapper();
         try {
