@@ -20,16 +20,13 @@ public class MovieService {
         repository.deleteById(id);
     }
 
-    public List<Movie> getMovieListByGenreId(Integer id) {
-        return repository.findByGenresId(id);
-    }
-
-    public List<Movie> getMovieListByGenreName(String name) {
-        return repository.findByGenresName(name);
-    }
-
     public Movie createMovie(Movie movie) {
         repository.save(movie);
         return movie;
     }
+
+    public List<Movie> findMovieByUserId(Long id) {
+        return repository.findByUserId(id);
+    }
+
 }

@@ -50,7 +50,7 @@ public class LoginController {
             redisClient.set(Constant.PREFIX_SHIRO_REFRESH_TOKEN + user.getUsername(), currentTimeMillis, Long.valueOf(refreshTokenExpireTime));
             response.setHeader("x-auth-token", jwtToken);
 
-            return new ResponseBean(HttpStatus.OK.value(), "Login Success.");
+            return new ResponseBean(HttpStatus.OK.value(), "Login Success.", user);
         } catch(IncorrectCredentialsException | UnknownAccountException e) {
            throw new RuntimeException("Login failed", e);
         }
@@ -72,7 +72,7 @@ public class LoginController {
         String wxToken = JwtUtil.signForWx(openid, user.getSalt(), currentTimeMillis);
         redisClient.set(Constant.PREFIX_SHIRO_REFRESH_TOKEN + user.getOpenid(), currentTimeMillis, Long.valueOf(refreshTokenExpireTime));
         response.setHeader("x-auth-token", wxToken);
-        return new ResponseBean(HttpStatus.CREATED.value(), "Success");
+        return new ResponseBean(HttpStatus.CREATED.value(), "Success", user);
     }
 
     @PostMapping("/register")

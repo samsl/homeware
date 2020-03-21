@@ -2,9 +2,7 @@ package ella.sam.query;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import ella.sam.models.Genre;
 import ella.sam.models.MovieDTO;
-import ella.sam.models.Query;
 import ella.sam.models.QueryBody;
 import ella.sam.models.QueryClient;
 
@@ -14,10 +12,8 @@ import org.elasticsearch.client.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.criteria.CriteriaBuilder;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
