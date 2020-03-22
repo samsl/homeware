@@ -35,6 +35,8 @@ public class MultiMatch {
         Map<String, Object> fieldsMap = new HashMap<>();
         fieldsMap.put("query", keyword);
         fieldsMap.put("fields", fields);
+        fieldsMap.put("type", "phrase");
+        fieldsMap.put("slop", 2);
         jsonMap.put("multi_match", fieldsMap);
         return jsonMap;
     }

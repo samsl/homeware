@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.util.CollectionUtils;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -72,8 +73,11 @@ public class QueryBody {
             jsonMap.put("aggs", aggregationMap);
         }
         if (sort != null) {
+            List<Object> sorts = new ArrayList<>();
+            sorts.add("_score");
             Map<String, String> sortMap = sort.jsonMap();
-            jsonMap.put("sort", sortMap);
+            sorts.add(sortMap);
+            jsonMap.put("sort", sorts);
         }
         ObjectMapper objectMapper = new ObjectMapper();
         try {
